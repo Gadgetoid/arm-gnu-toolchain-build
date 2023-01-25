@@ -285,6 +285,7 @@ $SRCDIR/$GCC/configure --target=$TARGET \
     --disable-libquadmath \
     --disable-libssp \
     --disable-libstdcxx-pch \
+    --disable-libstdcxx-verbose \
     --disable-nls \
     --disable-shared \
     --disable-threads \
