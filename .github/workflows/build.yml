@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     env:
-      PACKAGE_NAME: gcc-arm-none-eabi-9-2019-q4-major-src.tar.bz2
+      PACKAGE_NAME: gcc-arm-none-eabi-9-2023-q1-update-x86_64-linux.tar.bz2
 
     steps:
     - uses: actions/checkout@v3
