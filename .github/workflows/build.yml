@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - '**' # only run on branches
+  pull_request:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+
+    env:
+      PACKAGE_NAME: gcc-arm-none-eabi-9-2019-q4-major-src.tar.bz2
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install deps
+      run: sudo apt update && sudo apt -y install build-essential autoconf autogen bison dejagnu flex flip gawk git gperf gzip nsis openssh-client p7zip-full perl python-dev libisl-dev scons tcl texinfo tofrodos wget zip texlive texlive-extra-utils libncurses5-dev
+
+    # grab the sources from the original package
+    - run: |
+        wget https://developer.arm.com/-/media/Files/downloads/gnu-rm/9-2019q4/gcc-arm-none-eabi-9-2019-q4-major-src.tar.bz2
+        tar xf gcc-*.tar.bz2
+        mv gcc-*/src gcc-*/*.txt .
+
+    - name: Install sources
+      run: ./install-sources.sh
+
+    - name: Build prerequisites
+      run: ./build-prerequisites.sh --skip_steps=mingw32
+
+    - name: Build toolchain
+      run: ./build-toolchain.sh --skip_steps=mingw32,gdb-with-python,howto,manual,package_sources
+
+    - name: Upload
+      if: github.event_name == 'release'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      with:
+        asset_path: ${{github.workspace}}/pkg/${{env.PACKAGE_NAME}}
+        upload_url: ${{github.event.release.upload_url}}
+        asset_name: ${{env.PACKAGE_NAME}}
+        asset_content_type: application/octet-stream
+
+    - name: Upload artifact
+      if: github.event_name != 'release'
+      uses: actions/upload-artifact@v3
+      with:
+        name: ${{env.PACKAGE_NAME}}
+        path: ${{github.workspace}}/pkg/${{env.PACKAGE_NAME}}
